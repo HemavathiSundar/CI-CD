@@ -1,26 +1,24 @@
-name: CI/CD Pipeline
+name: NGINX CI
+
 on:
   push:
     branches:
       - main
+
 jobs:
-  build:
+  test-kubernetes-manifests:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Cache dependencies
-        uses: actions/cache@v2
+      
+      - name: Install kubectl
+        uses: azure/k8s-set-context@v1
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-      - name: Install Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm test
-      - name: Deploy
-        run: node index.js
+          install-kubectl: true
+
+      - name: Validate Kubernetes manifests
+        run: |
+          kubectl apply -f https://github.com/HemavathiSundar/aksCI/blob/main/yaml/nginx.yml --dry-run=client
+          kubectl apply -f https://github.com/HemavathiSundar/aksCI/blob/main/yaml/nginx-service.yml --dry-run=client
