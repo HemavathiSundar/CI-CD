@@ -1,4 +1,4 @@
-name: NGINX CI
+name: Node.js CI
 
 on:
   push:
@@ -6,23 +6,20 @@ on:
       - main
 
 jobs:
-  test-kubernetes-manifests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
-      - name: Install kubectl
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https gnupg
-          curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-          echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
-          sudo apt-get update
-          sudo apt-get install -y kubectl
-      
-      - name: Validate Kubernetes manifests
-        run: |
-          kubectl apply -f https://github.com/HemavathiSundar/aksCI/blob/main/yaml/nginx.yml --dry-run=client
-          kubectl apply -f https://github.com/HemavathiSundar/aksCI/blob/main/yaml/nginx-service.yml --dry-run=client
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
